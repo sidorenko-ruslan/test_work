@@ -1,20 +1,22 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, net } = require('electron')
 
 function createWindow () {
-  // Create the browser window.
-  const win = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      nodeIntegration: true
-    }
+  const request = net.request('http://localhost:8888')
+  request.on('response', (response) => {
+    response.on('data', (data) => {
+      const win = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+          nodeIntegration: true
+        }
+      })
+      win.loadFile('index.html')
+      win.remoteData = data
+      win.webContents.openDevTools()   
+    })
   })
-
-  // and load the index.html of the app.
-  win.loadFile('index.html')
-
-  // Open the DevTools.
-  win.webContents.openDevTools()
+  request.end()
 }
 
 app.whenReady().then(createWindow)
